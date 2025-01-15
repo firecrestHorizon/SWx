@@ -6,29 +6,22 @@
 import Foundation
 
 func createKpIndexTextReport(for kpData: KpIndexData) -> String {
-	var resultString = [String]()
+	let kpIndexMaxObserved = kpData.kpIndexValues
+		.filter { $0.observed == .observed }
+		.max(by: { $0.kp < $1.kp })
 
-	let kpIndexMaxObserved = kpData.kpIndexValues.filter { kpValue in
-		kpValue.observed == .observed
-	}.max()
+	let kpIndexMaxPredicted = kpData.kpIndexValues
+		.filter { $0.observed != .observed }
+		.max(by: { $0.kp < $1.kp })
 
-	let kpIndexMaxPredicted = kpData.kpIndexValues.filter { kpValue in
-		kpValue.observed != .observed
-	}.max()
+	let maxObservedKp = kpIndexMaxObserved?.kp ?? 0
+	let maxPredictedKp = kpIndexMaxPredicted?.kp ?? 0
 
-	var maxMarker = ""
-	for kpIndexValue in kpData.kpIndexValues {
-		if (kpIndexValue.observed == .observed && kpIndexValue.kp >= (kpIndexMaxObserved?.kp ?? 0)) ||
-				(kpIndexValue.observed != .observed && kpIndexValue.kp >= (kpIndexMaxPredicted?.kp ?? 0)){
-			maxMarker = " *"
-		} else {
-			maxMarker = ""
-		}
-
-		resultString.append("\(kpIndexValue)\(maxMarker)")
+	let reportLines = kpData.kpIndexValues.map { kpIndexValue -> String in
+		let maxMarker = (kpIndexValue.observed == .observed && kpIndexValue.kp >= maxObservedKp) ||
+		(kpIndexValue.observed != .observed && kpIndexValue.kp >= maxPredictedKp) ? " *" : ""
+		return "\(kpIndexValue)\(maxMarker)"
 	}
 
-	return resultString.reduce("") { partialResult, value  in
-		partialResult + "\(value)" + "\n"
-	}
+	return reportLines.joined(separator: "\n")
 }
