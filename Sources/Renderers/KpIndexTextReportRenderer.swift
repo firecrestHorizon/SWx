@@ -6,16 +6,13 @@
 import Foundation
 
 func createKpIndexTextReport(for kpData: KpIndexData) -> String {
-	let kpIndexMaxObserved = kpData.kpIndexValues
+	let maxObservedKp = kpData.kpIndexValues
 		.filter { $0.observed == .observed }
-		.max(by: { $0.kp < $1.kp })
+		.max(by: { $0.kp < $1.kp })?.kp ?? 0
 
-	let kpIndexMaxPredicted = kpData.kpIndexValues
+	let maxPredictedKp = kpData.kpIndexValues
 		.filter { $0.observed != .observed }
-		.max(by: { $0.kp < $1.kp })
-
-	let maxObservedKp = kpIndexMaxObserved?.kp ?? 0
-	let maxPredictedKp = kpIndexMaxPredicted?.kp ?? 0
+		.max(by: { $0.kp < $1.kp })?.kp ?? 0
 
 	let reportLines = kpData.kpIndexValues.map { kpIndexValue -> String in
 		let maxMarker = (kpIndexValue.observed == .observed && kpIndexValue.kp >= maxObservedKp) ||
