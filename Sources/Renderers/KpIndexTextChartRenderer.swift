@@ -10,7 +10,8 @@ import Foundation
 extension KpIndexValue: CustomStringConvertible {
   var description: String {
     let scaleString = noaaScale.map { " scale: \"\($0)\"" } ?? ""
-    return "\(timeTag) Kp: \(kp) [\(observed.rawValue)]\(scaleString)"
+		let valueString = String(format: "%5.2f", kp)
+		return "\(timeTag) Kp: \(valueString) [\(observed.rawValue)]\(scaleString)"
   }
 }
 

@@ -21,11 +21,18 @@ extension SWx {
     static var configuration = CommandConfiguration(
       abstract: "Retreive Kp forecast"
     )
-    
-    mutating func run() async throws {
-      let kpData = try await downloadKpIndexForecast()
-      
-      print(createKpIndexTextChart(for: kpData))
-    }
+
+		@Flag(name: [.short, .long], help: "Display as text.")
+		var textOutput: Bool = false
+
+		mutating func run() async throws {
+			let kpData = try await downloadKpIndexForecast()
+
+			if textOutput {
+				print(createKpIndexTextReport(for: kpData))
+			} else {
+				print(createKpIndexTextChart(for: kpData))
+			}
+		}
   }
 }

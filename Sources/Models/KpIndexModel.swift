@@ -21,7 +21,11 @@ enum KpObservationType: String, CaseIterable {
   case estimated = "estimated"
 }
 
-struct KpIndexValue {
+struct KpIndexValue: Comparable {
+	static func < (lhs: KpIndexValue, rhs: KpIndexValue) -> Bool {
+		lhs.kp < rhs.kp
+	}
+
   let timeTag: Date
   let kp: Double
   let observed: KpObservationType
