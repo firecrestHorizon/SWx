@@ -30,6 +30,12 @@ enum TerminalColorMode: String, CaseIterable, ExpressibleByArgument {
   }
 }
 
+enum OutputFormat: String, CaseIterable, ExpressibleByArgument {
+  case text
+  case json
+  case csv
+}
+
 @main
 struct SWx: AsyncParsableCommand {
   
@@ -47,8 +53,8 @@ extension SWx {
       abstract: "Retrieve Kp forecast"
     )
 
-    @Flag(name: [.short, .long], help: "Display as text.")
-    var textOutput: Bool = false
+    @Option(help: "Display a non-chart output: text, json, or csv.")
+    var format: OutputFormat?
 
     @Flag(help: "Display the full Kp 0–9 and G1–G5 scales.")
     var fullScale: Bool = false
@@ -56,12 +62,26 @@ extension SWx {
     @Option(help: "Colour output: auto, always, or never.")
     var color: TerminalColorMode = .auto
 
+    mutating func validate() throws {
+      if format != nil && fullScale {
+        throw ValidationError("--full-scale can only be used with the default chart output.")
+      }
+    }
+
     mutating func run() async throws {
       let kpData = try await downloadKpIndexForecast()
 
-      if textOutput {
+      switch format {
+      case .text:
         print(createKpIndexTextReport(for: kpData))
-      } else {
+
+      case .json:
+        print(try createKpIndexJSONReport(for: kpData))
+
+      case .csv:
+        print(createKpIndexCSVReport(for: kpData))
+
+      case nil:
         let useColor = color.shouldUseColor(
           isTerminal: isatty(STDOUT_FILENO) != 0,
           environment: ProcessInfo.processInfo.environment

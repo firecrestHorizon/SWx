@@ -165,22 +165,122 @@ final class KpIndexRendererTests: XCTestCase {
     XCTAssertEqual(chart.components(separatedBy: g5Band).count - 1, 1)
   }
 
-  func testReportMarksHighestObservedAndForecastValues() throws {
-    let timeTag = try XCTUnwrap(
-      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-28T00:00:00")
+  func testReportGroupsDatesShowsForecastBoundaryTrendsAndPeaks() throws {
+    let observedTime = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-28T18:00:00")
+    )
+    let estimatedTime = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-28T21:00:00")
+    )
+    let predictedTime = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-29T00:00:00")
     )
     var data = KpIndexData()
     data.kpIndexValues = [
-      KpIndexValue(timeTag: timeTag, kp: 2.0, observed: .observed, noaaScale: nil),
-      KpIndexValue(timeTag: timeTag, kp: 3.0, observed: .estimated, noaaScale: nil),
-      KpIndexValue(timeTag: timeTag, kp: 4.0, observed: .predicted, noaaScale: nil),
+      KpIndexValue(timeTag: predictedTime, kp: 5.0, observed: .predicted, noaaScale: .G1),
+      KpIndexValue(timeTag: observedTime, kp: 2.0, observed: .observed, noaaScale: nil),
+      KpIndexValue(timeTag: estimatedTime, kp: 3.0, observed: .estimated, noaaScale: nil),
     ]
 
     let report = createKpIndexTextReport(for: data)
-    let lines = report.split(separator: "\n")
 
-    XCTAssertTrue(lines[0].hasSuffix(" *"))
-    XCTAssertFalse(lines[1].hasSuffix(" *"))
-    XCTAssertTrue(lines[2].hasSuffix(" *"))
+    XCTAssertTrue(report.contains("Planetary Kp forecast · UTC"))
+    XCTAssertEqual(report.components(separatedBy: "Tue 28 Jul").count - 1, 1)
+    XCTAssertEqual(report.components(separatedBy: "Wed 29 Jul").count - 1, 1)
+    XCTAssertTrue(report.contains("-------------------- FORECAST --------------------"))
+    XCTAssertTrue(report.contains("2.00  observed"))
+    XCTAssertTrue(report.contains("— ◆"))
+    XCTAssertTrue(report.contains("3.00  estimated"))
+    XCTAssertTrue(report.contains("↑"))
+    XCTAssertTrue(report.contains("5.00  predicted"))
+    XCTAssertTrue(report.contains("G1"))
+    XCTAssertTrue(report.contains("↑ ◇"))
+    XCTAssertTrue(report.contains("◆ Peak observed   ◇ Peak forecast"))
+  }
+
+  func testJSONReportUsesVersionedCanonicalEnvelope() throws {
+    let timeTag = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-29T00:00:00")
+    )
+    let generatedAt = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-28T18:05:12")
+    )
+    var data = KpIndexData()
+    data.kpIndexValues = [
+      KpIndexValue(timeTag: timeTag, kp: 5.33, observed: .predicted, noaaScale: .G1)
+    ]
+
+    let report = try createKpIndexJSONReport(for: data, generatedAt: generatedAt)
+    let object = try XCTUnwrap(
+      JSONSerialization.jsonObject(with: Data(report.utf8)) as? [String: Any]
+    )
+    let dataset = try XCTUnwrap(object["dataset"] as? [String: Any])
+    let records = try XCTUnwrap(object["records"] as? [[String: Any]])
+    let record = try XCTUnwrap(records.first)
+    let point = try XCTUnwrap(record["data"] as? [String: Any])
+
+    XCTAssertEqual(object["schemaVersion"] as? Int, 1)
+    XCTAssertEqual(object["generatedAt"] as? String, "2026-07-28T18:05:12Z")
+    XCTAssertEqual(object["timeZone"] as? String, "UTC")
+    XCTAssertEqual(dataset["id"] as? String, "planetary-kp-forecast")
+    XCTAssertEqual(dataset["provider"] as? String, "NOAA SWPC")
+    XCTAssertEqual(record["timestamp"] as? String, "2026-07-29T00:00:00Z")
+    XCTAssertEqual(record["status"] as? String, "predicted")
+    XCTAssertEqual(point["kp"] as? Double, 5.33)
+    XCTAssertEqual(point["noaaScale"] as? String, "G1")
+  }
+
+  func testJSONReportEmitsNullForAnAbsentNOAAScale() throws {
+    let timeTag = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-28T18:00:00")
+    )
+    var data = KpIndexData()
+    data.kpIndexValues = [
+      KpIndexValue(timeTag: timeTag, kp: 2.0, observed: .observed, noaaScale: nil)
+    ]
+
+    let report = try createKpIndexJSONReport(for: data, generatedAt: timeTag)
+    let object = try XCTUnwrap(
+      JSONSerialization.jsonObject(with: Data(report.utf8)) as? [String: Any]
+    )
+    let records = try XCTUnwrap(object["records"] as? [[String: Any]])
+    let point = try XCTUnwrap(records.first?["data"] as? [String: Any])
+
+    XCTAssertTrue(point["noaaScale"] is NSNull)
+  }
+
+  func testCSVReportIsFlatAndChronological() throws {
+    let earlierTime = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-28T21:00:00")
+    )
+    let laterTime = try XCTUnwrap(
+      DateFormatter.noaaDataFileDateTime.date(from: "2026-07-29T00:00:00")
+    )
+    var data = KpIndexData()
+    data.kpIndexValues = [
+      KpIndexValue(timeTag: laterTime, kp: 5.33, observed: .predicted, noaaScale: .G1),
+      KpIndexValue(timeTag: earlierTime, kp: 3.0, observed: .estimated, noaaScale: nil),
+    ]
+
+    XCTAssertEqual(
+      createKpIndexCSVReport(for: data),
+      """
+      timestamp,status,kp,noaa_scale
+      2026-07-28T21:00:00Z,estimated,3.00,
+      2026-07-29T00:00:00Z,predicted,5.33,G1
+      """
+    )
+  }
+
+  func testOutputFormatIsOptionalAndRejectsFullScaleCombination() throws {
+    let chartCommand = try SWx.KpForecast.parse([])
+    XCTAssertNil(chartCommand.format)
+
+    let jsonCommand = try SWx.KpForecast.parse(["--format", "json"])
+    XCTAssertEqual(jsonCommand.format, .json)
+
+    XCTAssertThrowsError(
+      try SWx.KpForecast.parse(["--format", "text", "--full-scale"])
+    )
   }
 }

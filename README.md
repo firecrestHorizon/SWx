@@ -105,17 +105,65 @@ Use `--help` to see the available commands and options:
 swift run SWx --help
 ```
 
-## Text report
+## Output formats
 
-Text mode prints the UTC timestamp, Kp value, observation type, and NOAA scale
-when one is present. An asterisk marks the maximum observed value and the
-maximum value across the estimated and predicted forecast data.
+The terminal chart is displayed by default. Use `--format` to select a
+non-chart representation:
+
+```sh
+swift run SWx kp-forecast --format text
+swift run SWx kp-forecast --format json
+swift run SWx kp-forecast --format csv
+```
+
+Text mode groups records by UTC date, marks the transition from observed data
+to the forecast, and shows the trend from the preceding Kp value. A filled
+diamond marks the observed peak and an outlined diamond marks the forecast
+peak.
 
 ```text
-2026-07-27 18:00:00 +0000 Kp:  1.67 [observed]
-2026-07-27 21:00:00 +0000 Kp:  3.67 [estimated] *
-2026-07-28 00:00:00 +0000 Kp:  5.33 [predicted] scale: "G1" *
+Planetary Kp forecast · UTC
+
+Date         Time   Kp    Type         G    Trend
+Mon 27 Jul  18:00   1.67  observed     —    — ◆
+
+-------------------- FORECAST --------------------
+
+             21:00   3.67  estimated    —    ↑
+Tue 28 Jul  00:00   5.33  predicted    G1   ↑ ◇
+
+◆ Peak observed   ◇ Peak forecast
 ```
+
+JSON uses SWx's versioned canonical envelope:
+
+```json
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "id": "planetary-kp-forecast",
+    "name": "Planetary Kp Forecast",
+    "provider": "NOAA SWPC"
+  },
+  "generatedAt": "2026-07-28T18:05:12Z",
+  "timeZone": "UTC",
+  "records": [
+    {
+      "timestamp": "2026-07-29T00:00:00Z",
+      "status": "predicted",
+      "data": {
+        "kp": 5.33,
+        "noaaScale": "G1"
+      }
+    }
+  ]
+}
+```
+
+The envelope and record metadata are shared across datasets; fields inside
+`data` belong to the individual dataset. CSV provides the flat columns
+`timestamp`, `status`, `kp`, and `noaa_scale`. Both structured formats use ISO
+8601 UTC timestamps and contain no terminal styling.
 
 ## Tests
 
