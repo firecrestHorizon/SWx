@@ -15,6 +15,11 @@ let package = Package(
       dependencies: [
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
       ]
+    ),
+    .testTarget(
+      name: "SWxTests",
+      dependencies: ["SWx"],
+      resources: [.copy("Fixtures")]
     )
   ]
 )

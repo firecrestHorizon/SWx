@@ -10,8 +10,8 @@ import Foundation
 extension KpIndexValue: CustomStringConvertible {
   var description: String {
     let scaleString = noaaScale.map { " scale: \"\($0)\"" } ?? ""
-		let valueString = String(format: "%5.2f", kp)
-		return "\(timeTag) Kp: \(valueString) [\(observed.rawValue)]\(scaleString)"
+    let valueString = String(format: "%5.2f", kp)
+    return "\(timeTag) Kp: \(valueString) [\(observed.rawValue)]\(scaleString)"
   }
 }
 
@@ -26,7 +26,7 @@ extension KpIndexValue {
     default:
       barChar = "█"
     }
-    return String(repeating: barChar, count: Int(kp * 3))
+    return String(repeating: barChar, count: max(0, Int((kp * 3).rounded())))
   }
 }
 
@@ -60,9 +60,14 @@ func createKpIndexTextChart(for kpData: KpIndexData) -> String {
   // Print the bottom scale with date change indicator
   var scaleLine = "     "
   let dateFormatter = DateFormatter()
+  dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+  dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
   dateFormatter.dateFormat = "yyyy-MM-dd"
+
   let outputDateFormatter = DateFormatter()
-  outputDateFormatter.dateFormat = Locale.current.identifier.contains("_US") ? "▏MMM-dd" : "▏dd-MMM"
+  outputDateFormatter.locale = Locale(identifier: "en_US_POSIX")
+  outputDateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+  outputDateFormatter.dateFormat = Locale.current.regionCode == "US" ? "▏MMM-dd" : "▏dd-MMM"
   var previousDate: String? = nil
   var position = 0
 

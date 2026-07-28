@@ -9,7 +9,7 @@ import ArgumentParser
 struct SWx: AsyncParsableCommand {
   
   static var configuration = CommandConfiguration(
-    abstract: "NOAA Space Weather Data Retreival",
+    abstract: "NOAA Space Weather Data Retrieval",
     subcommands: [KpForecast.self],
     defaultSubcommand: KpForecast.self
   )
@@ -19,20 +19,20 @@ struct SWx: AsyncParsableCommand {
 extension SWx {
   struct KpForecast: AsyncParsableCommand {
     static var configuration = CommandConfiguration(
-      abstract: "Retreive Kp forecast"
+      abstract: "Retrieve Kp forecast"
     )
 
-		@Flag(name: [.short, .long], help: "Display as text.")
-		var textOutput: Bool = false
+    @Flag(name: [.short, .long], help: "Display as text.")
+    var textOutput: Bool = false
 
-		mutating func run() async throws {
-			let kpData = try await downloadKpIndexForecast()
+    mutating func run() async throws {
+      let kpData = try await downloadKpIndexForecast()
 
-			if textOutput {
-				print(createKpIndexTextReport(for: kpData))
-			} else {
-				print(createKpIndexTextChart(for: kpData))
-			}
-		}
+      if textOutput {
+        print(createKpIndexTextReport(for: kpData))
+      } else {
+        print(createKpIndexTextChart(for: kpData))
+      }
+    }
   }
 }
