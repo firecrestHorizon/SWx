@@ -1,3 +1,11 @@
+//
+// CanonicalJSONReport.swift
+// SWx
+//
+//  🦋 @kieran.firecresthorizon.uk
+//  firecrestHORIZON.uk
+//
+
 import Foundation
 
 struct CanonicalJSONReport<Payload: Encodable>: Encodable {

@@ -1,8 +1,9 @@
 //
-//  firecrestHORIZON.uk
+// KpIndexTextChartRenderer.swift
+// SWx
 //
-//  e-Mail : kieran.conlon@firecresthorizon.uk
-//  Twitter: @firecrestHRZN and @Kieran_Conlon
+//  🦋 @kieran.firecresthorizon.uk
+//  firecrestHORIZON.uk
 //
 
 import Foundation

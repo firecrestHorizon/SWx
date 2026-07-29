@@ -64,45 +64,45 @@ cd SWx
 Run the terminal chart:
 
 ```sh
-swift run SWx
+swift run swx
 ```
 
 Force the chart to display the complete Kp 0–9 and G1–G5 scales:
 
 ```sh
-swift run SWx --full-scale
+swift run swx --full-scale
 ```
 
 Override automatic colour detection when needed:
 
 ```sh
-swift run SWx --color always
-swift run SWx --color never
+swift run swx --color always
+swift run swx --color never
 ```
 
 Run the line-by-line text report:
 
 ```sh
-swift run SWx --text-output
+swift run swx --text-output
 ```
 
 The explicit subcommand form is also supported:
 
 ```sh
-swift run SWx kp-forecast --text-output
+swift run swx kp-forecast --text-output
 ```
 
 For a release build:
 
 ```sh
 swift build -c release
-.build/release/SWx
+.build/release/swx
 ```
 
 Use `--help` to see the available commands and options:
 
 ```sh
-swift run SWx --help
+swift run swx --help
 ```
 
 ## Output formats
@@ -111,9 +111,9 @@ The terminal chart is displayed by default. Use `--format` to select a
 non-chart representation:
 
 ```sh
-swift run SWx kp-forecast --format text
-swift run SWx kp-forecast --format json
-swift run SWx kp-forecast --format csv
+swift run swx kp-forecast --format text
+swift run swx kp-forecast --format json
+swift run swx kp-forecast --format csv
 ```
 
 Text mode groups records by UTC date, marks the transition from observed data

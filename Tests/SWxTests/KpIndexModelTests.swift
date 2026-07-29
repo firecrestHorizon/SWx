@@ -1,6 +1,14 @@
+//
+// KpIndexModelTests.swift
+// SWx
+//
+//  🦋 @kieran.firecresthorizon.uk
+//  firecrestHORIZON.uk
+//
+
 import Foundation
 import XCTest
-@testable import SWx
+@testable import swx
 
 final class KpIndexModelTests: XCTestCase {
   func testDecodesCurrentNOAAPayload() throws {

@@ -1,5 +1,9 @@
-// Kieran Conlon
-// Copyright © 2023 firecrestHORIZON.uk.  All rights reserved.
+//
+// SWx.swift
+// SWx
+//
+//  🦋 @kieran.firecresthorizon.uk
+//  firecrestHORIZON.uk
 //
 
 import Foundation
@@ -40,6 +44,7 @@ enum OutputFormat: String, CaseIterable, ExpressibleByArgument {
 struct SWx: AsyncParsableCommand {
   
   static var configuration = CommandConfiguration(
+    commandName: "swx",
     abstract: "NOAA Space Weather Data Retrieval",
     subcommands: [KpForecast.self],
     defaultSubcommand: KpForecast.self

@@ -14,14 +14,14 @@ let package = Package(
   ],
   targets: [
     .executableTarget(
-      name: "SWx",
+      name: "swx",
       dependencies: [
         .product(name: "ArgumentParser", package: "swift-argument-parser"),
       ]
     ),
     .testTarget(
       name: "SWxTests",
-      dependencies: ["SWx"],
+      dependencies: ["swx"],
       resources: [.copy("Fixtures")]
     )
   ]
